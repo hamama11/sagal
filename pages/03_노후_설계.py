@@ -35,7 +35,7 @@ labels = ["은퇴 시 필요 총액", "공적연금", "퇴직연금", "개인연
 values = [total_need, public_pension, retirement_pension, personal_annuity_goal]
 fig = go.Figure(go.Bar(x=labels, y=values, marker_color=["#145c9f", "#6ea6d7", "#f0b24b", "#0f9d75"]))
 fig.update_layout(title="재무 설계 구성 요소 비교")
-st.plotly_chart(fig, width="stretch")
+st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("### 정리 질문")
 st.write("1. 노후 준비는 단순히 '저축'만으로 해결되는가?")
