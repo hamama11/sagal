@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>경제수학 · 수열과 금융 대시보드</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(180deg, #eef5ff 0%, #f8fbff 100%);
+      color: #1f2d3d;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .dashboard {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f3f6d, #2f6ea7);
+      color: white;
+      border-radius: 22px;
+      padding: 32px;
+      box-shadow: 0 18px 40px rgba(7, 54, 98, 0.18);
+      margin-bottom: 20px;
+    }
+    .section-card {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(17, 65, 120, 0.10);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .mini-stat {
+      background: #f6f9ff;
+      border: 1px solid #d9e7f6;
+      border-radius: 16px;
+      padding: 14px;
+      height: 100%;
+    }
+    .formula {
+      background: #edf5ff;
+      border-left: 4px solid #145c9f;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 700;
+      color: #123c67;
+      margin: 10px 0;
+    }
+    .btn-primary { background: #145c9f; border-color: #145c9f; }
+    .btn-outline-primary { color: #145c9f; border-color: #145c9f; }
+    .badge-soft {
+      background: #fff4d8;
+      color: #8c5a00;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 6px 10px;
+    }
+    canvas { max-height: 320px; }
+    .chart-wrap { position: relative; }
+    .small-note { font-size: 0.92rem; color: #64748b; }
+    .quiz-btn { margin-top: 8px; width: 100%; text-align: left; }
+    .answer-box { margin-top: 8px; font-weight: 700; color: #0f9d75; }
+    .tooltip-text {
+      display: inline-block; cursor: help;
+      border-bottom: 1px dashed #6485aa;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <section class="hero">
+      <span class="badge-soft">고등학교 경제수학 · 수열과 금융</span>
+      <h1 class="mt-2 mb-3">데이터 기반 인터랙티브 학습 페이지</h1>
+      <p class="mb-0">
+        화폐의 시간가치, 연금의 현재·미래가치, 복리의 힘, 그리고 개인 재무 설계까지
+        학생이 직접 입력하고 실시간으로 확인할 수 있는 대시보드형 학습 자료입니다.
+      </p>
+    </section>
+
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="section-card">
+          <h3>1. 화폐의 시간 가치 체험</h3>
+          <div class="row g-3 align-items-stretch">
+            <div class="col-lg-5">
+              <label for="baseYear" class="form-label">과거 연도</label>
+              <input id="baseYear" type="number" class="form-control" value="1990" min="1940" max="2025" />
+              <label for="baseMoney" class="form-label mt-3">과거 금액(원)</label>
+              <input id="baseMoney" type="number" class="form-control" value="1000000" min="0" />
+              <label for="currentYear" class="form-label mt-3">현재 연도</label>
+              <input id="currentYear" type="number" class="form-control" value="2025" min="1940" max="2050" />
+              <div class="small-note mt-2">※ 소비자물가 데이터를 바탕으로 현재 가치가 계산됩니다. (샘플 데이터 기반)</div>
+            </div>
+            <div class="col-lg-7">
+              <div class="mini-stat h-100">
+                <div id="timeValueResult" class="display-6 fw-bold text-primary"></div>
+                <p class="mb-2">1990년 100만 원의 현재 가치</p>
+                <p class="mb-1">실생활 비교 예시</p>
+                <ul class="mb-0">
+                  <li>짜장면 2,000그릇 → 현재는 약 <span id="ramenCount"></span>그릇 수준</li>
+                  <li>최신 스마트폰 1대 → 현재는 약 <span id="phoneCount"></span>대 수준</li>
+                </ul>
+                <div class="formula mt-3">현재가치 = 과거금액 × (현재 CPI / 과거 CPI)</div>
+                <div class="small-note">이것은 <span class="tooltip-text" title="등비수열의 합처럼, 일정 비율로 증가하는 물가를 반복적으로 반영하는 방식입니다.">물가 상승률이 누적되는 구조</span>를 의미합니다.</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap mt-4">
+            <canvas id="cpiChart"></canvas>
+          </div>
+          <div class="mt-3">
+            <h5>퀴즈</h5>
+            <div class="quiz-item">
+              <p class="mb-1">Q1. 1990년 100만 원이 현재보다 더 큰 구매력을 가졌을까요?</p>
+              <button class="btn btn-primary quiz-btn" data-answer="맞음">① 맞다</button>
+              <button class="btn btn-outline-primary quiz-btn" data-answer="틀림">② 틀리다</button>
+              <div class="answer-box"></div>
+            </div>
+            <div class="quiz-item mt-3">
+              <p class="mb-1">Q2. 물가가 상승하면 같은 돈으로 살 수 있는 물건의 수가 줄어드는 이유는?</p>
+              <button class="btn btn-primary quiz-btn" data-answer="구매력이 약해지기 때문이다">① 구매력이 약해지기 때문이다</button>
+              <button class="btn btn-outline-primary quiz-btn" data-answer="돈이 사라지기 때문이다">② 돈이 사라지기 때문이다</button>
+              <div class="answer-box"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="section-card">
+          <h3>2. 연금 수학 계산기</h3>
+          <div class="row g-3">
+            <div class="col-lg-4">
+              <label for="annuityMode" class="form-label">유형 선택</label>
+              <select id="annuityMode" class="form-select">
+                <option value="end">주기말(기말급)</option>
+                <option value="begin">주기초(기시급)</option>
+              </select>
+              <label for="annuityPayment" class="form-label mt-3">매년 납입/수령액(원)</label>
+              <input id="annuityPayment" type="number" class="form-control" value="3000000" min="0" />
+              <label for="annuityYears" class="form-label mt-3">기간(년)</label>
+              <input id="annuityYears" type="range" class="form-range" min="1" max="40" value="10" />
+              <div class="small-note" id="annuityYearsValue">10년</div>
+              <label for="annuityRate" class="form-label mt-3">연 이율(%)</label>
+              <input id="annuityRate" type="range" class="form-range" min="1" max="10" step="0.1" value="4" />
+              <div class="small-note" id="annuityRateValue">4.0%</div>
+            </div>
+            <div class="col-lg-8">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="mini-stat">
+                    <h5>현재가치(PV)</h5>
+                    <div id="pvResult" class="display-6 fw-bold text-primary"></div>
+                    <div class="formula">PV = A × [1-(1+r)^(-n)] / r</div>
+                    <div class="small-note">기말급은 기본 공식으로 계산하며, 기시급은 동일한 계산값에 (1+r)을 곱해 반영합니다.</div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mini-stat">
+                    <h5>미래가치(FV)</h5>
+                    <div id="fvResult" class="display-6 fw-bold text-success"></div>
+                    <div class="formula">FV = A × [(1+r)^n - 1] / r</div>
+                    <div class="small-note">마찬가지로 기시급은 기말급 결과에 (1+r)을 곱해 계산합니다.</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="mini-stat">
+                    <h5>72의 법칙</h5>
+                    <div id="rule72Result"></div>
+                    <div class="formula">약식 계산: 72 ÷ 수익률 = 약 2배가 되는 년수</div>
+                    <div class="small-note">예: 수익률 6%면 약 12년, 실제 복리식은 근사치입니다.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="section-card">
+          <h3>3. 실전 3층 재무 설계 시뮬레이터</h3>
+          <div class="row g-3">
+            <div class="col-lg-5">
+              <label for="retireAge" class="form-label">희망 은퇴 연령</label>
+              <input id="retireAge" type="range" class="form-range" min="50" max="70" value="60" />
+              <div class="small-note" id="retireAgeValue">60세</div>
+
+              <label for="lifeExpectancy" class="form-label mt-3">기대 수명</label>
+              <input id="lifeExpectancy" type="range" class="form-range" min="70" max="95" value="85" />
+              <div class="small-note" id="lifeExpectancyValue">85세</div>
+
+              <label for="inflationRate" class="form-label mt-3">물가상승률(%)</label>
+              <input id="inflationRate" type="range" class="form-range" min="1" max="6" step="0.1" value="2.5" />
+              <div class="small-note" id="inflationRateValue">2.5%</div>
+
+              <label for="currentSalary" class="form-label mt-3">현재 연봉(원)</label>
+              <input id="currentSalary" type="number" class="form-control" value="45000000" min="0" />
+              <div class="mt-3">
+                <a class="btn btn-outline-primary" href="https://www.career.go.kr/cloud/w/job/list" target="_blank">커리어넷 직업정보</a>
+                <a class="btn btn-outline-primary ms-2" href="https://kosis.kr/statHtml/statHtml.do?sso=ok&returnurl=https%3A%2F%2Fkosis.kr%3A443%2FstatHtml%2FstatHtml.do%3FtblId%3DDT_14217M_241%26orgId%3D115%26" target="_blank">KOSIS 초봉 통계</a>
+              </div>
+            </div>
+            <div class="col-lg-7">
+              <div class="mini-stat">
+                <h5>결과 요약</h5>
+                <div id="retireSummary" class="display-6 fw-bold text-primary"></div>
+                <div class="row g-3 mt-1">
+                  <div class="col-md-6">
+                    <div class="mini-stat">
+                      <div class="small-note">은퇴 시 필요한 총액</div>
+                      <div id="requiredAmount" class="fw-bold fs-5"></div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mini-stat">
+                      <div class="small-note">월 개인연금 목표 납입액</div>
+                      <div id="monthlyNeed" class="fw-bold fs-5"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="formula mt-3">노후 총 필요액 − 공적연금 − 퇴직연금 = 개인연금 목표액</div>
+                <div class="small-note">공적연금은 국민연금 예시값을 적용하고, 퇴직연금은 직장인 기준으로 간단히 추정해 보았습니다.</div>
+              </div>
+              <div class="chart-wrap mt-3">
+                <canvas id="retireChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="section-card">
+          <h3>4. 세금 계산 모듈: 세후 실수령액</h3>
+          <div class="row g-3">
+            <div class="col-lg-4">
+              <label for="annualPension" class="form-label">연금 수령액(원)</label>
+              <input id="annualPension" type="number" class="form-control" value="6000000" min="0" />
+              <label for="taxRate" class="form-label mt-3">세율(%)</label>
+              <input id="taxRate" type="range" class="form-range" min="20" max="30" value="25" />
+              <div class="small-note" id="taxRateValue">25%</div>
+            </div>
+            <div class="col-lg-8">
+              <div class="mini-stat">
+                <h5>세후 실수령액</h5>
+                <div id="netPensionResult" class="display-6 fw-bold text-success"></div>
+                <div class="small-note">세금은 연금 수령 시 약 20~30% 수준을 반영한 예시 계산입니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script>
+    const money = value => Math.round(value).toLocaleString('ko-KR') + '원';
+
+    const cpiData = {
+      labels: ['1990', '2000', '2010', '2020', '2025'],
+      values: [100, 112, 130, 148, 171]
+    };
+
+    const cpiChart = new Chart(document.getElementById('cpiChart'), {
+      type: 'line',
+      data: {
+        labels: cpiData.labels,
+        datasets: [{
+          label: '소비자물가 지수(샘플)',
+          data: cpiData.values,
+          borderColor: '#145c9f',
+          backgroundColor: 'rgba(20,92,159,0.12)',
+          fill: true,
+          tension: 0.35
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: false } }
+      }
+    });
+
+    function inflationAdjustedValue(baseYear, baseMoney, currentYear) {
+      const indexMap = { '1990': 100, '2000': 112, '2010': 130, '2020': 148, '2025': 171 };
+      const baseIndex = indexMap[baseYear] ?? 100;
+      const currentIndex = indexMap[currentYear] ?? indexMap['2025'];
+      return baseMoney * (currentIndex / baseIndex);
+    }
+
+    function updateTimeValue() {
+      const baseYear = document.getElementById('baseYear').value;
+      const baseMoney = Number(document.getElementById('baseMoney').value) || 0;
+      const currentYear = document.getElementById('currentYear').value;
+      const adjusted = inflationAdjustedValue(baseYear, baseMoney, currentYear);
+      document.getElementById('timeValueResult').textContent = money(adjusted);
+      document.getElementById('ramenCount').textContent = Math.round(adjusted / 2000).toLocaleString('ko-KR');
+      document.getElementById('phoneCount').textContent = Math.round(adjusted / 1200000).toLocaleString('ko-KR');
+    }
+
+    function annuityFormula(payment, rate, n, mode) {
+      const r = rate / 100;
+      let pv = payment * (1 - Math.pow(1 + r, -n)) / r;
+      let fv = payment * ((Math.pow(1 + r, n) - 1) / r);
+      if (mode === 'begin') {
+        pv *= (1 + r);
+        fv *= (1 + r);
+      }
+      return { pv, fv };
+    }
+
+    function updateAnnuity() {
+      const payment = Number(document.getElementById('annuityPayment').value) || 0;
+      const n = Number(document.getElementById('annuityYears').value) || 0;
+      const rate = Number(document.getElementById('annuityRate').value) || 0;
+      const mode = document.getElementById('annuityMode').value;
+      const { pv, fv } = annuityFormula(payment, rate, n, mode);
+      document.getElementById('pvResult').textContent = money(pv);
+      document.getElementById('fvResult').textContent = money(fv);
+      document.getElementById('annuityYearsValue').textContent = n + '년';
+      document.getElementById('annuityRateValue').textContent = rate.toFixed(1) + '%';
+      const yearsToDouble = 72 / rate;
+      document.getElementById('rule72Result').innerHTML = `약 ${yearsToDouble.toFixed(1)}년 후에 자산이 약 2배가 됩니다.<br><span class="small-note">(단, 이 값은 72의 법칙의 근사값입니다.)</span>`;
+    }
+
+    function updateRetirement() {
+      const retireAge = Number(document.getElementById('retireAge').value) || 60;
+      const lifeExpectancy = Number(document.getElementById('lifeExpectancy').value) || 85;
+      const inflation = Number(document.getElementById('inflationRate').value) || 2.5;
+      const currentSalary = Number(document.getElementById('currentSalary').value) || 0;
+      const retireYears = Math.max(lifeExpectancy - retireAge, 1);
+      const annualNeed = currentSalary * 0.7; // 예시: 은퇴 후 생활비는 현재 연봉의 70%
+      const futureNeed = annualNeed * Math.pow(1 + inflation / 100, retireYears);
+      const requiredAmount = futureNeed * retireYears;
+      const publicPension = currentSalary * 0.12;
+      const retirementPension = currentSalary * 0.08;
+      const personalNeed = Math.max(requiredAmount - publicPension - retirementPension, 0);
+      const monthlyNeed = personalNeed / (retireYears * 12);
+
+      document.getElementById('retireAgeValue').textContent = retireAge + '세';
+      document.getElementById('lifeExpectancyValue').textContent = lifeExpectancy + '세';
+      document.getElementById('inflationRateValue').textContent = inflation.toFixed(1) + '%';
+      document.getElementById('retireSummary').textContent = money(personalNeed);
+      document.getElementById('requiredAmount').textContent = money(requiredAmount);
+      document.getElementById('monthlyNeed').textContent = money(monthlyNeed);
+
+      const ctx = document.getElementById('retireChart');
+      if (window.retireChartInstance) {
+        window.retireChartInstance.destroy();
+      }
+      window.retireChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['은퇴 시 필요 총액', '공적연금', '퇴직연금', '개인연금 목표액'],
+          datasets: [{
+            label: '예시 재무 설계',
+            data: [requiredAmount, publicPension, retirementPension, personalNeed],
+            backgroundColor: ['#145c9f', '#6ea6d7', '#f0b24b', '#0f9d75']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: false } }
+        }
+      });
+    }
+
+    function updateNetPension() {
+      const annualPension = Number(document.getElementById('annualPension').value) || 0;
+      const taxRate = Number(document.getElementById('taxRate').value) || 25;
+      const net = annualPension * (1 - taxRate / 100);
+      document.getElementById('taxRateValue').textContent = taxRate + '%';
+      document.getElementById('netPensionResult').textContent = money(net);
+    }
+
+    [
+      'baseYear', 'baseMoney', 'currentYear'
+    ].forEach(id => document.getElementById(id).addEventListener('input', updateTimeValue));
+
+    [
+      'annuityPayment', 'annuityYears', 'annuityRate', 'annuityMode'
+    ].forEach(id => document.getElementById(id).addEventListener('input', updateAnnuity));
+
+    [
+      'retireAge', 'lifeExpectancy', 'inflationRate', 'currentSalary'
+    ].forEach(id => document.getElementById(id).addEventListener('input', updateRetirement));
+
+    ['annualPension', 'taxRate'].forEach(id => document.getElementById(id).addEventListener('input', updateNetPension));
+
+    document.querySelectorAll('.quiz-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const box = btn.parentElement.querySelector('.answer-box');
+        box.textContent = `정답: ${btn.dataset.answer}`;
+      });
+    });
+
+    updateTimeValue();
+    updateAnnuity();
+    updateRetirement();
+    updateNetPension();
+  </script>
+</body>
+</html>
