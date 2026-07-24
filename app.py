@@ -1,3 +1,7 @@
+아래는 요청하신 내용을 반영한 **전체 코드**입니다.  
+추가 문구는 **`1. 도입: 화폐의 시간가치` 제목 바로 아래**에 넣었습니다.
+
+```python
 import math
 import random
 
@@ -64,7 +68,7 @@ question_items = [
         "탐구",
         "연금? 미래가치?",
         "연금의 현재가치와 미래가치를 계산하며, 수열 구조와 지수함수 개념을 이해합니다.",
-        "하이라이트",
+        "청춘:서른즈음에",
         "./[하이라이트] 강승원 X 최정훈 - 서른 즈음에 [더 시즌즈-이효리의 레드카펫]  KBS 방송.mp4",
     ),
     (
@@ -100,6 +104,23 @@ for i, (label, title, description, button_label, button_target) in enumerate(que
 st.markdown("---")
 st.subheader("1. 도입: 화폐의 시간가치")
 
+st.markdown(
+    """
+    <div class="card">
+        <div class="section-label">생각 열기</div>
+        <h3>서른 즈음에, 그리고 2040년의 한국</h3>
+        <p>김광석의 &lt;서른 즈음에&gt;가 발표된 1994년에 한국의 중위연령은 29세였습니다.</p>
+        <p><strong>Q.</strong> 지금 고3이 32세가 되는 2040년, 한국의 중위연령은 대략 몇 살일까요?</p>
+        <p><strong>A.</strong> 55세</p>
+        <p class="small-note">
+            설명: 65세 이상 국민 비중은 2022년 100명 중 약 17명, 2050년 100명 중 약 40명,
+            2072년 100명 중 약 48명으로 증가할 것으로 예상됩니다.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 intro_col1, intro_col2 = st.columns(2)
 with intro_col1:
     base_year = st.slider("과거 연도", min_value=1940, max_value=2025, value=1990, step=1)
@@ -132,7 +153,10 @@ with intro_col2:
 
     item_fig = go.Figure()
     for item in sample_items["품목"]:
-        item_series = sample_items.loc[sample_items["품목"] == item, ["가격지수_1990", "가격지수_2000", "가격지수_2010", "가격지수_2020", "가격지수_2025"]].iloc[0]
+        item_series = sample_items.loc[
+            sample_items["품목"] == item,
+            ["가격지수_1990", "가격지수_2000", "가격지수_2010", "가격지수_2020", "가격지수_2025"]
+        ].iloc[0]
         item_fig.add_trace(
             go.Scatter(
                 x=[1990, 2000, 2010, 2020, 2025],
@@ -298,5 +322,4 @@ if st.session_state.scenario_history:
         height=360,
     )
     st.plotly_chart(history_fig, use_container_width=True)
-
-st.info("각 페이지는 수업 흐름에 맞춰 단계별로 구성되어 있으며, 학생이 질문을 던지고 계산을 직접 바꾸며 생각을 확장할 수 있게 설계했습니다.")
+```
