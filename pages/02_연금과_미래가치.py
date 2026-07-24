@@ -33,6 +33,8 @@ with col2:
     st.caption("주기말 기준 수식: FV = A × [(1+r)^n - 1] / r")
     st.info(f"72의 법칙 근사값: 약 {72 / rate:.1f}년 후에 자산이 2배가 됩니다.")
 
+st.image("../assets/annuity_timeline.svg", use_container_width=True)
+
 st.markdown("### 수학적 의미 정리")
 st.write("- 기말급은 매년 말에 납입하는 구조로, 첫 납입이 이자를 한 번 덜 받습니다.")
 st.write("- 기시급은 매년 초에 납입하므로, 첫 지불이 즉시 이자를 받게 되어 결과가 더 큽니다.")

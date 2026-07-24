@@ -31,10 +31,37 @@ with col2:
     st.metric("월 개인연금 목표 납입액", f"{math.floor(monthly_personal_need):,}원")
     st.metric("개인연금 목표액", f"{math.floor(personal_annuity_goal):,}원")
 
-labels = ["은퇴 시 필요 총액", "공적연금", "퇴직연금", "개인연금 목표액"]
-values = [total_need, public_pension, retirement_pension, personal_annuity_goal]
-fig = go.Figure(go.Bar(x=labels, y=values, marker_color=["#145c9f", "#6ea6d7", "#f0b24b", "#0f9d75"]))
-fig.update_layout(title="재무 설계 구성 요소 비교")
+retirement_year_labels = [f"은퇴 후 {year}년차" for year in range(1, retire_years + 1)]
+annual_living_costs = [annual_living_cost * ((1 + inflation_rate / 100) ** (year - 1)) for year in range(1, retire_years + 1)]
+annual_support = [public_pension + retirement_pension + monthly_personal_need * 12] * retire_years
+
+fig = go.Figure()
+fig.add_trace(
+    go.Bar(
+        x=retirement_year_labels,
+        y=annual_living_costs,
+        name="필요 생활비",
+        marker_color="#145c9f",
+    )
+)
+fig.add_trace(
+    go.Scatter(
+        x=retirement_year_labels,
+        y=annual_support,
+        mode="lines+markers",
+        name="공적연금 + 퇴직연금 + 개인연금 준비금",
+        line=dict(color="#0f9d75", width=3),
+        marker=dict(size=7),
+    )
+)
+fig.update_layout(
+    title="은퇴 후 생활비와 준비금 흐름",
+    xaxis_title="은퇴 후 연도",
+    yaxis_title="연간 금액(원)",
+    template="plotly_white",
+    height=380,
+    xaxis_tickangle=-20,
+)
 st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("### 정리 질문")

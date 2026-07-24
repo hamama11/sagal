@@ -115,17 +115,21 @@ with st.expander("12개 지출목적별 세부 수치 입력", expanded=True):
     for i, cat in enumerate(categories):
         target_col = grid_left if i < 6 else grid_right
         with target_col:
-            idx_change = st.number_input(
+            idx_change = st.slider(
                 f"{cat} 지수 변화율(%)",
+                min_value=-30.0,
+                max_value=40.0,
                 value=float(example_index_changes[i]),
+                step=0.1,
                 key=f"idx_{i}",
-                step=0.1,
             )
-            w_pct = st.number_input(
+            w_pct = st.slider(
                 f"{cat} 가중치 비율(%)",
+                min_value=0.0,
+                max_value=100.0,
                 value=float(default_my_weights[i]),
-                key=f"w_{i}",
                 step=0.1,
+                key=f"w_{i}",
             )
             indices.append(100 + idx_change)
             weights.append(w_pct)

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eff6ff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#0f766e" />
+    </marker>
+  </defs>
+  <rect width="1200" height="420" fill="url(#bg)" rx="18" />
+  <text x="60" y="52" font-size="28" font-family="Arial" font-weight="700" fill="#0f172a">연금의 흐름: 매년 납입과 미래가치</text>
+
+  <line x1="80" y1="110" x2="1120" y2="110" stroke="#0f766e" stroke-width="4" marker-end="url(#arrow)" />
+
+  <g font-family="Arial" font-size="18">
+    <rect x="90" y="70" width="110" height="80" rx="12" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="115" y="102">1년차</text>
+    <text x="115" y="128">납입 시작</text>
+
+    <rect x="240" y="70" width="110" height="80" rx="12" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="265" y="102">2년차</text>
+    <text x="265" y="128">이자 누적</text>
+
+    <rect x="390" y="70" width="110" height="80" rx="12" fill="#fef3c7" stroke="#d97706"/>
+    <text x="415" y="102">3년차</text>
+    <text x="415" y="128">추가 납입</text>
+
+    <rect x="540" y="70" width="110" height="80" rx="12" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="565" y="102">4년차</text>
+    <text x="565" y="128">복리 증가</text>
+
+    <rect x="690" y="70" width="110" height="80" rx="12" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="715" y="102">5년차</text>
+    <text x="715" y="128">지속 성장</text>
+
+    <rect x="840" y="70" width="110" height="80" rx="12" fill="#fce7f3" stroke="#db2777"/>
+    <text x="865" y="102">6년차</text>
+    <text x="865" y="128">누적 합계</text>
+  </g>
+
+  <text x="70" y="235" font-size="22" font-family="Arial" font-weight="700" fill="#0f172a">핵심 해석</text>
+  <text x="70" y="275" font-size="18" font-family="Arial" fill="#334155">• 매년 초에 납입하면 첫 납입이 더 오래 불려서 미래가치가 커집니다.</text>
+  <text x="70" y="305" font-size="18" font-family="Arial" fill="#334155">• 매년 말에 납입하면 마지막 납입이 이자를 한 번 덜 받습니다.</text>
+  <text x="70" y="335" font-size="18" font-family="Arial" fill="#334155">• 연금은 “매기 납입액 × 지수적 누적 성장” 구조로 이해할 수 있습니다.</text>
+</svg>

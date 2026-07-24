@@ -1,4 +1,5 @@
 import math
+import random
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -104,8 +105,31 @@ with intro_col2:
     adjusted_value = base_money * (current_index / base_index)
 
     st.metric("현재 시점의 가치", f"{math.floor(adjusted_value):,}원")
-    st.write(f"짜장면 2,000원 기준: 약 {math.floor(adjusted_value / 2000):,}그릇")
-    st.write(f"스마트폰 1,200,000원 기준: 약 {math.floor(adjusted_value / 1_200_000):,}대")
+
+    sample_items = pd.DataFrame(
+        {
+            "품목": ["짜장면", "라면", "스마트폰", "교과서", "배달음식", "지하철 1개월권"],
+            "기준가격": [2000, 1200, 1200000, 18000, 9000, 65000],
+            "가격지수": [108, 116, 162, 127, 139, 132],
+        }
+    )
+    sample_items["현재가격추정"] = (sample_items["기준가격"] * sample_items["가격지수"] / 100).round(0)
+
+    st.caption("예시 품목의 가격 변화 지수(1990=100)")
+    st.dataframe(sample_items, use_container_width=True, hide_index=True)
+
+    item_fig = go.Figure()
+    item_fig.add_trace(go.Bar(x=sample_items["품목"], y=sample_items["가격지수"], marker_color="#0f766e"))
+    item_fig.update_layout(
+        title="예시 품목의 가격 변화 지수 비교",
+        xaxis_title="품목",
+        yaxis_title="지수(1990=100)",
+        template="plotly_white",
+        height=330,
+        xaxis_tickangle=-15,
+    )
+    st.plotly_chart(item_fig, use_container_width=True)
+
     st.info("이 값은 현실적인 소비자물가 지수 데이터를 단순화한 예시입니다. 수업에서는 실제 지표를 추가로 비교해 보세요.")
 
 years = [1990, 2000, 2010, 2020, 2025]
@@ -145,33 +169,36 @@ national_weights = [142.4, 14.4, 52.1, 170.1, 38.2, 73.6, 113.6, 43.5, 56.7, 72.
 example_indices = [122.5, 108.3, 115.0, 128.4, 112.1, 105.8, 118.2, 102.1, 114.5, 107.3, 124.6, 116.8]
 default_my_weights = [150, 10, 40, 180, 30, 60, 100, 40, 90, 70, 150, 80]
 
-col_left, col_right = st.columns([1.15, 1])
 
-with col_left:
-    weights = []
-    indices = []
-    with st.expander("지출목적별 지수 및 나의 가중치", expanded=True):
-        grid_left, grid_right = st.columns(2)
-        for i, cat in enumerate(categories):
-            target_col = grid_left if i < 6 else grid_right
-            with target_col:
-                idx = st.number_input(f"{cat}", value=float(example_indices[i]), key=f"idx_{i}", step=0.1, label_visibility="collapsed")
-                w = st.number_input(f"{cat}", value=float(default_my_weights[i]), key=f"w_{i}", step=1.0, label_visibility="collapsed")
-                indices.append(idx)
-                weights.append(w)
+def generate_random_scenario():
+    rng = random.Random()
+    base_weights = [max(1.0, w * rng.uniform(0.65, 1.45)) for w in default_my_weights]
+    total_weight = sum(base_weights)
+    normalized_weights = [round(w / total_weight * 1000.0, 1) for w in base_weights]
+    shifted_indices = [round(idx * rng.uniform(0.92, 1.10), 1) for idx in example_indices]
+    return normalized_weights, shifted_indices
 
-    total_weight = sum(weights)
-    if abs(total_weight - 1000.0) > 1e-6:
-        st.warning(f"⚠️ 현재 나의 가중치 총합은 {total_weight:.1f}입니다. 계산식은 자동으로 1,000 기준으로 재조정합니다.")
+
+if "my_weights" not in st.session_state:
+    st.session_state.my_weights = default_my_weights.copy()
+if "my_indices" not in st.session_state:
+    st.session_state.my_indices = example_indices.copy()
+if "scenario_history" not in st.session_state:
+    st.session_state.scenario_history = []
+
+weights = st.session_state.my_weights
+indices = st.session_state.my_indices
+
+col_right = st.columns(1)[0]
+
+normalized_weights = [w / sum(weights) * 1000.0 for w in weights] if sum(weights) != 0 else weights
+my_cpi = sum(idx * w for idx, w in zip(indices, normalized_weights)) / 1000.0
+national_cpi = sum(idx * weight for idx, weight in zip(indices, national_weights)) / 1000.0
+
+r_my = ((my_cpi / 100) ** (1 / 5)) - 1
+r_nat = ((national_cpi / 100) ** (1 / 5)) - 1
 
 with col_right:
-    normalized_weights = [w / total_weight * 1000.0 for w in weights] if total_weight != 0 else weights
-    my_cpi = sum(idx * w for idx, w in zip(indices, normalized_weights)) / 1000.0
-    national_cpi = sum(idx * weight for idx, weight in zip(indices, national_weights)) / 1000.0
-
-    r_my = ((my_cpi / 100) ** (1 / 5)) - 1
-    r_nat = ((national_cpi / 100) ** (1 / 5)) - 1
-
     st.metric("나만의 물가지수(My-CPI)", f"{my_cpi:.2f}")
     st.metric("국가 CPI", f"{national_cpi:.2f}", delta=f"차이 {my_cpi - national_cpi:+.2f}p")
     st.metric("My-CPI 연평균 상승률(r_My)", f"{r_my * 100:.2f}%", delta=f"국가 대비 {(r_my - r_nat) * 100:+.2f}%p")
@@ -179,6 +206,33 @@ with col_right:
     st.latex(r"\text{My-CPI} = \frac{\sum (I_i \times w_i)}{1000}")
     st.latex(r"r_{My} = \left(\frac{\text{My-CPI}}{100}\right)^{\frac{1}{5}} - 1")
 
+st.subheader("랜덤 시나리오 속성")
+scenario_col, reset_col = st.columns([1, 1])
+with scenario_col:
+    if st.button("랜덤 시나리오 확인", use_container_width=True):
+        random_weights, random_indices = generate_random_scenario()
+        st.session_state.my_weights = random_weights
+        st.session_state.my_indices = random_indices
+        weights = random_weights
+        indices = random_indices
+        st.session_state.scenario_history.append(
+            {
+                "scenario": len(st.session_state.scenario_history) + 1,
+                "나만의 물가지수": round(sum(idx * w for idx, w in zip(indices, weights)) / 1000.0, 2),
+                "국가 CPI": round(sum(idx * weight for idx, weight in zip(indices, national_weights)) / 1000.0, 2),
+            }
+        )
+with reset_col:
+    if st.button("기록 초기화", use_container_width=True):
+        st.session_state.scenario_history = []
+        st.session_state.my_weights = default_my_weights.copy()
+        st.session_state.my_indices = example_indices.copy()
+        weights = st.session_state.my_weights
+        indices = st.session_state.my_indices
+
+normalized_weights = [w / sum(weights) * 1000.0 for w in weights] if sum(weights) != 0 else weights
+my_cpi = sum(idx * w for idx, w in zip(indices, normalized_weights)) / 1000.0
+national_cpi = sum(idx * weight for idx, weight in zip(indices, national_weights)) / 1000.0
 summary_df = pd.DataFrame(
     {
         "분류": [c.split(". ", 1)[1] for c in categories],
@@ -189,27 +243,47 @@ summary_df = pd.DataFrame(
 )
 
 st.dataframe(summary_df, use_container_width=True, hide_index=True)
-st.caption("※ 지수는 2020=100 기준, 가중치는 총합 1,000 기준으로 이해하면 됩니다.")
+st.caption("※ 각 시나리오는 랜덤하게 새 패턴을 생성하며, 누적 그래프에 기록됩니다.")
 
-fig = go.Figure()
-fig.add_trace(go.Bar(x=summary_df["분류"], y=summary_df["국가 가중치"], name="국가 표준 가중치", marker_color="#94A3B8"))
-fig.add_trace(go.Bar(x=summary_df["분류"], y=summary_df["나의 가중치"], name="나의 가중치", marker_color="#10B981"))
-fig.update_layout(
-    barmode="group",
-    title="가중치 배분 구조 비교",
-    template="plotly_white",
-    height=340,
-    xaxis_tickangle=-20,
-)
-st.plotly_chart(fig, use_container_width=True)
+if st.session_state.scenario_history:
+    history_df = pd.DataFrame(st.session_state.scenario_history)
+    history_fig = go.Figure()
+    history_fig.add_trace(
+        go.Scatter(
+            x=history_df["scenario"],
+            y=history_df["나만의 물가지수"],
+            mode="lines+markers",
+            name="나만의 물가지수(My-CPI)",
+            line=dict(color="#10B981", width=3),
+            marker=dict(size=8),
+        )
+    )
+    history_fig.add_trace(
+        go.Scatter(
+            x=history_df["scenario"],
+            y=history_df["국가 CPI"],
+            mode="lines+markers",
+            name="국가 CPI",
+            line=dict(color="#94A3B8", width=3, dash="dash"),
+            marker=dict(size=8),
+        )
+    )
+    history_fig.update_layout(
+        title="랜덤 시나리오 누적 변화 추적",
+        xaxis_title="시나리오 번호",
+        yaxis_title="지수 수준",
+        template="plotly_white",
+        height=360,
+    )
+    st.plotly_chart(history_fig, use_container_width=True)
 
 st.markdown("---")
 st.subheader("학습 활동 및 읽기자료")
 
 stage_items = [
-    ("1단계 · 도입: 화폐의 시간가치", "pages/00_물가상승률.py", "https://www.kosis.kr/"),
-    ("2단계 · 탐구: 연금과 미래가치", "pages/02_연금과_미래가치.py", "https://www.kosis.kr/"),
-    ("3단계 · 정리: 실전 재무 설계", "pages/03_노후_설계.py", "https://www.kosis.kr/"),
+    ("1단계 · 도입: 화폐의 시간가치(물가상승률)", "pages/00_물가상승률.py", "https://kosis.kr/statHtml/statHtml.do?sso=ok&returnurl=https%3A%2F%2Fkosis.kr%3A443%2FstatHtml%2FstatHtml.do%3Fmode%3D%26conn_path%3Di3%26list_id%3D%26dbUser%3DNSI.%26tblId%3DDT_1J22001%26vw_cd%3DMT_ZTITLE%26itm_id%3D%26language%3Dko%26pub%3D%26orgId%3D101%26"),
+    ("2단계 · 탐구: 연금과 미래가치(서른즈음에-김광석)", "pages/02_연금과_미래가치.py", "https://www.youtube.com/shorts/XBiaYssatKA"),
+    ("3단계 · 정리: 실전 재무 설계,(커리어넷)", "pages/03_노후_설계.py", "https://www.career.go.kr/cloud/w/job/list"),
 ]
 
 for title, page_path, reading_link in stage_items:
