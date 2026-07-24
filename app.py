@@ -318,4 +318,3 @@ if st.session_state.scenario_history:
         height=360,
     )
     st.plotly_chart(history_fig, use_container_width=True)
-```
