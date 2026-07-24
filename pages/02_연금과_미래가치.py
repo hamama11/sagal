@@ -4,8 +4,8 @@ import streamlit as st
 
 st.set_page_config(page_title="연금과 미래가치", layout="wide")
 
-st.title("2단계 · 탐구: 연금과 미래가치")
-st.caption("기말급과 기시급을 비교하며 수열 구조를 이해합니다.")
+st.title("2단계 · 탐구: 미래가치")
+st.caption("월말(기말급)과 월초(기시급)을 비교하며 수열 구조를 이해합니다.")
 
 col1, col2 = st.columns(2)
 

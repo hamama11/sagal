@@ -51,52 +51,53 @@ st.markdown(
 )
 
 st.subheader("이번 수업에서 학생들이 탐구할 핵심 질문")
-col1, col2, col3 = st.columns(3)
+question_cols = st.columns(3)
+question_items = [
+    (
+        "도입",
+        "왜 돈의 가치가 변할까?",
+        "물가상승과 소비자물가 지수를 통해 화폐의 시간가치 개념을 발견합니다.",
+        "https://kosis.kr/statHtml/statHtml.do?sso=ok&returnurl=https%3A%2F%2Fkosis.kr%3A443%2FstatHtml%2FstatHtml.do%3Fmode%3D%26conn_path%3Di3%26list_id%3D%26dbUser%3DNSI.%26tblId%3DDT_1J22001%26vw_cd%3DMT_ZTITLE%26itm_id%3D%26language%3Dko%26pub%3D%26orgId%3D101%26",
+    ),
+    (
+        "탐구",
+        "연금의 수학은 무엇을 말할까?",
+        "현재가치, 미래가치, 매년 납입액을 직접 바꾸며 수열과 금융의 관계를 비교합니다.",
+        "https://www.youtube.com/shorts/XBiaYssatKA",
+    ),
+    (
+        "정리",
+        "나의 노후 설계는 어떻게?",
+        "은퇴 필요액과 개인연금 목표를 세우고, 수익과 생활비의 균형을 이해합니다.",
+        "https://www.career.go.kr/cloud/w/job/list",
+    ),
+]
 
-with col1:
-    st.markdown(
-        """
-        <div class="card">
-            <div class="section-label">도입</div>
-            <h3>왜 돈의 가치가 변할까?</h3>
-            <p>물가상승과 소비자물가 지수를 통해 화폐의 시간가치 개념을 발견합니다.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-with col2:
-    st.markdown(
-        """
-        <div class="card">
-            <div class="section-label">탐구</div>
-            <h3>연금의 수학은 무엇을 말할까?</h3>
-            <p>현재가치, 미래가치, 매년 납입액을 직접 바꾸며 수열과 금융의 관계를 비교합니다.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-with col3:
-    st.markdown(
-        """
-        <div class="card">
-            <div class="section-label">정리</div>
-            <h3>나의 노후 설계는 어떻게?</h3>
-            <p>은퇴 필요액과 개인연금 목표를 세우고, 수익과 생활비의 균형을 이해합니다.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+for i, (label, title, description, reading_link) in enumerate(question_items):
+    with question_cols[i]:
+        card_col, link_col = st.columns([4, 1])
+        with card_col:
+            st.markdown(
+                f"""
+                <div class="card">
+                    <div class="section-label">{label}</div>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with link_col:
+            st.link_button("읽기자료", reading_link, use_container_width=True)
 
 st.markdown("---")
 st.subheader("1. 도입: 화폐의 시간가치")
 
 intro_col1, intro_col2 = st.columns(2)
 with intro_col1:
-    base_year = st.number_input("과거 연도", min_value=1940, max_value=2025, value=1990, step=1)
-    base_money = st.number_input("과거 금액(원)", min_value=0, value=1_000_000, step=100_000)
-    current_year = st.number_input("현재 연도", min_value=1940, max_value=2050, value=2025, step=1)
+    base_year = st.slider("과거 연도", min_value=1940, max_value=2025, value=1990, step=1)
+    base_money = st.slider("과거 금액(원)", min_value=0, max_value=10_000_000, value=1_000_000, step=100_000)
+    current_year = st.slider("현재 연도", min_value=1940, max_value=2050, value=2025, step=1)
 
 with intro_col2:
     cpi_index = {1990: 100, 2000: 112, 2010: 130, 2020: 148, 2025: 171}
@@ -110,19 +111,33 @@ with intro_col2:
         {
             "품목": ["짜장면", "라면", "스마트폰", "교과서", "배달음식", "지하철 1개월권"],
             "기준가격": [2000, 1200, 1200000, 18000, 9000, 65000],
-            "가격지수": [108, 116, 162, 127, 139, 132],
+            "가격지수_1990": [100, 100, 100, 100, 100, 100],
+            "가격지수_2000": [104, 108, 122, 110, 116, 113],
+            "가격지수_2010": [108, 112, 135, 117, 125, 121],
+            "가격지수_2020": [114, 121, 148, 124, 132, 129],
+            "가격지수_2025": [120, 128, 162, 130, 139, 136],
         }
     )
-    sample_items["현재가격추정"] = (sample_items["기준가격"] * sample_items["가격지수"] / 100).round(0)
+    sample_items["현재가격추정"] = (sample_items["기준가격"] * sample_items["가격지수_2025"] / 100).round(0)
 
     st.caption("예시 품목의 가격 변화 지수(1990=100)")
     st.dataframe(sample_items, use_container_width=True, hide_index=True)
 
     item_fig = go.Figure()
-    item_fig.add_trace(go.Bar(x=sample_items["품목"], y=sample_items["가격지수"], marker_color="#0f766e"))
+    for item in sample_items["품목"]:
+        item_series = sample_items.loc[sample_items["품목"] == item, ["가격지수_1990", "가격지수_2000", "가격지수_2010", "가격지수_2020", "가격지수_2025"]].iloc[0]
+        item_fig.add_trace(
+            go.Scatter(
+                x=[1990, 2000, 2010, 2020, 2025],
+                y=item_series.tolist(),
+                mode="lines+markers",
+                name=item,
+            )
+        )
+
     item_fig.update_layout(
-        title="예시 품목의 가격 변화 지수 비교",
-        xaxis_title="품목",
+        title="예시 품목의 가격 변화 지수 추이",
+        xaxis_title="연도",
         yaxis_title="지수(1990=100)",
         template="plotly_white",
         height=330,
