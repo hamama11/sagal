@@ -57,25 +57,28 @@ question_items = [
         "도입",
         "왜 돈의 가치가 변할까?",
         "물가상승과 소비자물가 지수를 통해 화폐의 시간가치 개념을 발견합니다.",
+        "물가지수(통계청)",
         "https://kosis.kr/statHtml/statHtml.do?sso=ok&returnurl=https%3A%2F%2Fkosis.kr%3A443%2FstatHtml%2FstatHtml.do%3Fmode%3D%26conn_path%3Di3%26list_id%3D%26dbUser%3DNSI.%26tblId%3DDT_1J22001%26vw_cd%3DMT_ZTITLE%26itm_id%3D%26language%3Dko%26pub%3D%26orgId%3D101%26",
     ),
     (
         "탐구",
-        "연금의 수학은 무엇을 말할까?",
-        "현재가치, 미래가치, 매년 납입액을 직접 바꾸며 수열과 금융의 관계를 비교합니다.",
-        "https://www.youtube.com/shorts/XBiaYssatKA",
+        "연금? 미래가치?",
+        "연금의 현재가치와 미래가치를 계산하며, 수열 구조와 지수함수 개념을 이해합니다.",
+        "하이라이트",
+        "./[하이라이트] 강승원 X 최정훈 - 서른 즈음에 [더 시즌즈-이효리의 레드카펫]  KBS 방송.mp4",
     ),
     (
         "정리",
         "나의 노후 설계는 어떻게?",
         "은퇴 필요액과 개인연금 목표를 세우고, 수익과 생활비의 균형을 이해합니다.",
+        "잡코리아(진로탐색)",
         "https://www.career.go.kr/cloud/w/job/list",
     ),
 ]
 
-for i, (label, title, description, reading_link) in enumerate(question_items):
+for i, (label, title, description, button_label, button_target) in enumerate(question_items):
     with question_cols[i]:
-        card_col, link_col = st.columns([4, 1])
+        card_col, action_col = st.columns([4, 1])
         with card_col:
             st.markdown(
                 f"""
@@ -87,8 +90,12 @@ for i, (label, title, description, reading_link) in enumerate(question_items):
                 """,
                 unsafe_allow_html=True,
             )
-        with link_col:
-            st.link_button("읽기자료", reading_link, use_container_width=True)
+        with action_col:
+            if label == "탐구":
+                if st.button(button_label, use_container_width=True):
+                    st.video(button_target, format="video/mp4", start_time=0)
+            else:
+                st.link_button(button_label, button_target, use_container_width=True)
 
 st.markdown("---")
 st.subheader("1. 도입: 화폐의 시간가치")
@@ -291,24 +298,5 @@ if st.session_state.scenario_history:
         height=360,
     )
     st.plotly_chart(history_fig, use_container_width=True)
-
-st.markdown("---")
-st.subheader("학습 활동 및 읽기자료")
-
-stage_items = [
-    ("1단계 · 도입: 화폐의 시간가치(물가상승률)", "pages/00_물가상승률.py", "https://kosis.kr/statHtml/statHtml.do?sso=ok&returnurl=https%3A%2F%2Fkosis.kr%3A443%2FstatHtml%2FstatHtml.do%3Fmode%3D%26conn_path%3Di3%26list_id%3D%26dbUser%3DNSI.%26tblId%3DDT_1J22001%26vw_cd%3DMT_ZTITLE%26itm_id%3D%26language%3Dko%26pub%3D%26orgId%3D101%26"),
-    ("2단계 · 탐구: 연금과 미래가치(서른즈음에-김광석)", "pages/02_연금과_미래가치.py", "https://www.youtube.com/shorts/XBiaYssatKA"),
-    ("3단계 · 정리: 실전 재무 설계,(커리어넷)", "pages/03_노후_설계.py", "https://www.career.go.kr/cloud/w/job/list"),
-]
-
-for title, page_path, reading_link in stage_items:
-    activity_col, reading_col = st.columns([3, 1])
-
-    with activity_col:
-        if st.button(title, use_container_width=True, key=f"activity_{page_path}"):
-            st.switch_page(page_path)
-
-    with reading_col:
-        st.link_button("읽기자료", reading_link, use_container_width=True)
 
 st.info("각 페이지는 수업 흐름에 맞춰 단계별로 구성되어 있으며, 학생이 질문을 던지고 계산을 직접 바꾸며 생각을 확장할 수 있게 설계했습니다.")
